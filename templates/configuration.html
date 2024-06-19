@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #444;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input[type="text"], select, input[type="submit"] {
+            width: calc(100% - 16px);
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #007B9E;
+        }
+        .message {
+            text-align: center;
+            padding: 10px;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-width: 500px;
+            background-color: #f2f2f2;
+        }
+    </style>
+    <script>
+        function goBack() {
+            window.location.href = '/';
+        }
+    </script>
+</head>
+<body>
+    <h1>Update SNMP Community String</h1>
+    {% if message %}
+        <div class="message">{{ message }}</div>
+    {% else %}
+        <form method="post">
+            <label for="router">Router:</label>
+            <select id="router" name="router">
+                <option value="R1">R1</option>
+                <option value="R2">R2</option>
+                <option value="R3">R3</option>
+            </select><br>
+            <label for="community_string">New SNMP Community String:</label>
+            <input type="text" id="community_string" name="community_string" required><br>
+            <input type="submit" value="Update">
+        </form>
+    {% endif %}
+    <div class="button-container">
+        <button onclick="goBack()">Back to Data View</button>
+    </div>
+</body>
+</html>

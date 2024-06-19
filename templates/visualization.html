@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Interface Data Visualization</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.6.2/chart.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.6.2/chart.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            margin-bottom: 50px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .chart-title {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #444;
+        }
+        .button-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 1em;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+    <script>
+        function goBackToData() {
+            window.location.href = '/';
+        }
+    </script>
+</head>
+<body>
+    <h1>Network Interface Data Visualization</h1>
+    <div class="button-container">
+        <button onclick="goBackToData()">Back to Data</button>
+    </div>
+    <div id="charts"></div>
+    <script>
+        const data = {{ data|tojson }};
+        const routers = data.routers;
+
+        function getLabels(router) {
+            return router.ips;
+        }
+
+        function getInboundData(router) {
+            return router.traffic.inbound;
+        }
+
+        function getOutboundData(router) {
+            return router.traffic.outbound;
+        }
+
+        function getErrorData(router) {
+            return router.traffic.in_errors.map((inError, index) => {
+                return (inError + router.traffic.out_errors[index]) / 2;
+            });
+        }
+
+        function getResponseTimeData(router) {
+            return router.traffic.response_times.map(time => parseFloat(time.split(' ')[0]));
+        }
+
+        function createChart(ctx, labels, data, label) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        fill: false,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        const chartsContainer = document.getElementById('charts');
+
+        routers.forEach((router, routerIndex) => {
+            const labels = getLabels(router);
+
+            const routerDiv = document.createElement('div');
+            routerDiv.classList.add('chart-container');
+            routerDiv.innerHTML = `
+                <div class="chart-title">Router ${router.name}</div>
+                <canvas id="inboundChart${routerIndex}" width="400" height="150"></canvas>
+                <canvas id="outboundChart${routerIndex}" width="400" height="150"></canvas>
+                <canvas id="errorChart${routerIndex}" width="400" height="150"></canvas>
+                <canvas id="responseTimeChart${routerIndex}" width="400" height="150"></canvas>
+            `;
+            chartsContainer.appendChild(routerDiv);
+
+            const inboundCtx = document.getElementById(`inboundChart${routerIndex}`).getContext('2d');
+            createChart(inboundCtx, labels, getInboundData(router), 'Inbound Throughput (Mbps)');
+
+            const outboundCtx = document.getElementById(`outboundChart${routerIndex}`).getContext('2d');
+            createChart(outboundCtx, labels, getOutboundData(router), 'Outbound Throughput (Mbps)');
+
+            const errorCtx = document.getElementById(`errorChart${routerIndex}`).getContext('2d');
+            createChart(errorCtx, labels, getErrorData(router), 'Error Rates (%)');
+
+            const responseTimeCtx = document.getElementById(`responseTimeChart${routerIndex}`).getContext('2d');
+            createChart(responseTimeCtx, labels, getResponseTimeData(router), 'Response Times (ms)');
+        });
+    </script>
+</body>
+</html>

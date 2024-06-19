@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNMP Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+            background-color: #f4f4f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            text-align: center;
+        }
+        .button-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .status-up {
+            color: green;
+        }
+        .status-down {
+            color: red;
+        }
+    </style>
+    <script>
+        function refreshData() {
+            window.location.reload();  // Reload the entire page
+        }
+
+        function navigateTo(page) {
+            window.location.href = '/' + page;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Automatically refresh data every 5 minutes
+            setInterval(refreshData, 300000);  // 300,000 milliseconds = 5 minutes
+        });
+    </script>
+</head>
+<body>
+    <h1>SNMP Data</h1>
+    <div class="button-container">
+        <button onclick="refreshData()">Refresh Data</button>
+        <button onclick="navigateTo('configuration')">Configuration</button>
+        <button onclick="navigateTo('visualization')">Visualize Data</button>
+        <button onclick="navigateTo('routers')">Manage Database</button>
+    </div>
+    <div id="router-data">
+        <!-- Router data will be inserted here by JavaScript -->
+        {% for router in data.routers %}
+            <h2>Router {{ router.name }} <span class="{{ 'status-up' if router.status == 'up' else 'status-down' }}">(Status: {{ router.status }})</span></h2>
+            <p><strong>CPU Usage:</strong> {{ router.cpu }}</p>
+            <p><strong>Memory Usage:</strong> {{ router.memory }}</p>
+            <p><strong>OSPF Router ID:</strong> {{ router.ospf_router_id }}</p>
+
+            <h3>Network Interfaces</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>IP Address</th>
+                        <th>Inbound Throughput (Mbps)</th>
+                        <th>Outbound Throughput (Mbps)</th>
+                        <th>Inbound Error Rate (%)</th>
+                        <th>Outbound Error Rate (%)</th>
+                        <th>Response Time</th>
+                        <th>Max Link Utilization (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(router.ips|length) %}
+                        <tr>
+                            <td>{{ router.ips[i] }}</td>
+                            <td>{{ router.traffic.inbound[i] }}</td>
+                            <td>{{ router.traffic.outbound[i] }}</td>
+                            <td>{{ router.traffic.in_errors[i] }}</td>
+                            <td>{{ router.traffic.out_errors[i] }}</td>
+                            <td>{{ router.traffic.response_times[i] }}</td>
+                            <td>{{ router.traffic.bandwidth_utilizations[i] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+    </div>
+</body>
+</html>
